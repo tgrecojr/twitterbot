@@ -2,6 +2,7 @@ package com.greco.twitter.twitterbot.bus;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.vault.annotation.VaultPropertySource;
@@ -32,6 +33,9 @@ public class TwitterReader {
     private String mediastorelocation;
     @Value("${twitterbot.userlong}")
     private String[] userlong;
+
+    @Autowired
+    S3Uploader s3Uploader;
 
     public void doTwitter() throws Exception{
 
@@ -81,11 +85,13 @@ public class TwitterReader {
                             in.close();
                             byte[] response = out.toByteArray();
                             File file = new File(mediastorelocation);
-                            String filename = file.getAbsolutePath() + "/" + m.getId() + "." + getExtension(m.getType());
-                            log.info("Writing file: " + filename );
-                            FileOutputStream fos = new FileOutputStream(filename);
+                            String filename = m.getId() + "." + getExtension(m.getType());
+                            String fullfilename = file.getAbsolutePath() + "/" + filename;
+                            log.info("Writing file: " + fullfilename );
+                            FileOutputStream fos = new FileOutputStream(fullfilename);
                             fos.write(response);
                             fos.close();
+                            s3Uploader.uploadFile(fullfilename,filename);
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
