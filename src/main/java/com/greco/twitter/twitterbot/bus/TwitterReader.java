@@ -126,6 +126,8 @@ public class TwitterReader {
         twitterStream.addListener(listener);
         FilterQuery query = new FilterQuery();
         query.follow(getLongValues(userlong));
+        String keywords[] = {"grecoderbyday"};
+        query.track(keywords);
         twitterStream.filter(query);
     }
 
